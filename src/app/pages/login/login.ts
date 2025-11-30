@@ -28,7 +28,7 @@ export class LoginComponent {
   onSubmit(): void {
     const { username, password } = this.loginForm.value;
     if (this.auth.login(username!, password!)) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/home/listing']);
     } else {
       this.errorMessage = 'Invalid username or password';
     }

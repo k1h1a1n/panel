@@ -1,0 +1,27 @@
+/* Content area that sits to the right of the sidebar */
+.content {
+	margin-left: 240px; /* match sidebar width */
+	padding: 20px;
+	padding-top: 80px; /* space for fixed header */
+	min-height: 100vh;
+	background: #f8f9fa;
+}
+
+/* Full page layout for routes like /login where header/sidebar are hidden */
+.fullpage {
+	margin-left: 0;
+	padding: 20px;
+	min-height: 100vh;
+	background: #f8f9fa;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Small adjustments so fixed sidebar doesn't overlap top nav inside pages */
+/* Small adjustments for nav visuals */
+.content .navbar {
+	border-radius: 0.25rem;
+}
+
+/* The header is a fixed component (see header.scss). We keep top spacing in .content. */

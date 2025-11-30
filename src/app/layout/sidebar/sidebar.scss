@@ -1,0 +1,27 @@
+.sidebar {
+  width: 240px;
+  height: calc(100vh - 60px); // account for header height
+  position: fixed;
+  top: 60px;
+  left: 0;
+  padding: 20px 10px;
+  overflow-y: auto;
+
+  .nav-link {
+    color: #adb5bd;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    margin-bottom: 5px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    &.active {
+      background: #0d6efd;
+      color: #fff;
+    }
+  }
+}

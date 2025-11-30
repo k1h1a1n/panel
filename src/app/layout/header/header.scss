@@ -1,0 +1,22 @@
+.navbar {
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+
+  .nav-link {
+    color: #fff !important;
+    margin-right: 15px;
+    font-weight: 500;
+
+    &.active {
+      border-bottom: 2px solid #0d6efd;
+    }
+  }
+}
+
+.app-header-placeholder {
+  height: 60px; /* reserve space for fixed header */
+}
