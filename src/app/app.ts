@@ -1,13 +1,12 @@
 import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { NgIf } from '@angular/common';
-import { LoaderComponent } from './pages/loader/loader';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { Header } from './layout/header/header';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, LoaderComponent, Sidebar, Header, NgIf],
+  imports: [RouterOutlet, Sidebar, Header, CommonModule],
   template: `
     <ng-container *ngIf="showLayout">
       <app-header></app-header>
@@ -15,7 +14,6 @@ import { Header } from './layout/header/header';
     </ng-container>
 
     <main [class.content]="showLayout" [class.fullpage]="!showLayout">
-      <app-loader></app-loader>
       <router-outlet></router-outlet>
     </main>
   `,
