@@ -1,0 +1,32 @@
+<div class="images-root">
+  <header class="images-header">
+    <button class="back" (click)="backToList()">← Back</button>
+    <h3>{{ title }}</h3>
+  </header>
+
+  <div *ngIf="imgList.length === 0" class="empty">No images to show</div>
+
+  <div class="cards" *ngIf="imgList.length">
+    <div class="card" *ngFor="let img of pagedItems">
+      <div class="img-wrap">
+        <img [src]="resolveImageSrc(img)" alt="image" />
+      </div>
+      <div class="card-meta">
+        <div class="meta-id" *ngIf="getImageId(img)">ID: {{ getImageId(img) }}</div>
+        <div class="meta-lang" *ngIf="getImageLang(img)">Lang: {{ getImageLang(img) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pager" *ngIf="totalPages > 1">
+    <button class="pager-btn" (click)="goTo(1)" [disabled]="currentPage===1">«First</button>
+    <button class="pager-btn" (click)="prev()" [disabled]="currentPage === 1">‹ Prev</button>
+
+    <ng-container *ngFor="let p of pageRange">
+      <button class="pager-num" [class.active]="p===currentPage" (click)="goTo(p)">{{ p }}</button>
+    </ng-container>
+
+    <button class="pager-btn" (click)="next()" [disabled]="currentPage === totalPages">Next ›</button>
+    <button class="pager-btn" (click)="goTo(totalPages)" [disabled]="currentPage===totalPages">Last »</button>
+  </div>
+</div>

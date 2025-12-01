@@ -1,27 +1,22 @@
 import { Component, signal, inject } from '@angular/core';
+import { LoaderService } from './shared/services/loader.service';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Sidebar } from './layout/sidebar/sidebar';
 import { Header } from './layout/header/header';
 import { CommonModule } from '@angular/common';
+import { PulseLoaderComponent } from './shared/components/pulse-loader/pulse-loader.component';
+import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar, Header, CommonModule],
-  template: `
-    <ng-container *ngIf="showLayout">
-      <app-header></app-header>
-      <app-sidebar></app-sidebar>
-    </ng-container>
-
-    <main [class.content]="showLayout" [class.fullpage]="!showLayout">
-      <router-outlet></router-outlet>
-    </main>
-  `,
+  imports: [RouterOutlet, Sidebar, Header, CommonModule, PulseLoaderComponent, ErrorToastComponent],
+  templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   protected readonly title = signal('panel');
   private router = inject(Router);
+  private loaderService = inject(LoaderService);
   showLayout = true;
 
   constructor() {
@@ -37,5 +32,13 @@ export class App {
 
   private updateLayout(url: string): void {
     this.showLayout = !url.startsWith('/login');
+  }
+
+  loaderIsLoading(): boolean {
+    return this.loaderService.isLoading();
+  }
+
+  loaderError(): string | null {
+    return this.loaderService.errorMessage();
   }
 }

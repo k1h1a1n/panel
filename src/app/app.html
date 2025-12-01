@@ -1,0 +1,11 @@
+<app-pulse-loader></app-pulse-loader>
+<app-error-toast></app-error-toast>
+
+<ng-container *ngIf="showLayout">
+  <app-header></app-header>
+  <app-sidebar></app-sidebar>
+</ng-container>
+
+<main [class.content]="showLayout" [class.fullpage]="!showLayout">
+  <router-outlet></router-outlet>
+</main>

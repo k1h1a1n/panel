@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,19 +8,16 @@ import { Observable } from 'rxjs';
 export class SharedApiService {
   private http = inject(HttpClient);
 
-  get<T>(url: string): Observable<T> {
-    return this.http.get<T>(url);
+  private get runtimeConfig() {
+    return (window as any).__RUNTIME_CONFIG__ || { apiBaseUrl: '/api' };
   }
 
-  post<T>(url: string, body: any): Observable<T> {
-    return this.http.post<T>(url, body);
-  }
+  getCategoryData(category?: string): Observable<any> {
+    const url = `${this.runtimeConfig.apiBaseUrl}/api/${category}`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
 
-  put<T>(url: string, body: any): Observable<T> {
-    return this.http.put<T>(url, body);
-  }
-
-  delete<T>(url: string): Observable<T> {
-    return this.http.delete<T>(url);
+    return this.http.get(url, { headers });
   }
 }

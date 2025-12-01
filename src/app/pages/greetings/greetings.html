@@ -1,0 +1,24 @@
+<div class="greetings-root">
+  <header class="greetings-header">
+    <button class="back" *ngIf="breadcrumb.length" (click)="goBack()">← Back</button>
+    <h2>{{ title() }}</h2>
+    <div class="crumbs" *ngIf="breadcrumb.length">{{ breadcrumb.join(' / ') }}</div>
+  </header>
+
+  <div class="search-box">
+    <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search categories..." />
+  </div>
+
+  <ul class="greetings-list">
+    <li *ngFor="let item of displayList" (click)="onItemClick(item)" class="greetings-item">
+      <div class="name">{{ item.name }}</div>
+      <div class="actions">
+        <button class="images-btn" *ngIf="(item.imgList && item.imgList.length) || (item.imgs && item.imgs.length)" (click)="openImages(item, $event)">Images</button>
+        <div class="chev" *ngIf="(item.subCategories && item.subCategories.length) || (item.subcategories && item.subcategories.length)">›</div>
+      </div>
+    </li>
+  </ul>
+
+  <div *ngIf="displayList.length === 0 && currentList.length > 0" class="empty">No categories match your search</div>
+  <div *ngIf="!currentList || currentList.length === 0" class="empty">No categories available</div>
+</div>
