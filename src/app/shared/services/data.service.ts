@@ -17,7 +17,30 @@ export class SharedApiService {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
+    return this.http.get(url, { headers });
+  }
 
+  getSocialPost(): Observable<any> {
+    const url = `${this.runtimeConfig.intrasoftApiUrl}/devicetemplate/VBZ1/Coupons.json`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    return this.http.get(url, { headers });
+  }
+
+  getGreetings(): Observable<any> {
+    const url = `${this.runtimeConfig.intrasoftApiUrl}/devicetemplate/VBZ1/Greetings.json`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    return this.http.get(url, { headers });
+  }
+
+  getBrochures(): Observable<any> {
+    const url = `${this.runtimeConfig.intrasoftApiUrl}/devicetemplate/VBZ1/Brochures.json`;
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
     return this.http.get(url, { headers });
   }
 }
