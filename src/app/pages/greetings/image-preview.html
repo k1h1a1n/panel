@@ -1,32 +1,48 @@
-<div class="images-root">
-  <header class="images-header">
+<div class="images-container">
+  <header class="listing-header">
     <button class="back" (click)="backToList()">← Back</button>
-    <h3>{{ title }}</h3>
+    <h2>{{ title }}</h2>
   </header>
 
-  <div *ngIf="imgList.length === 0" class="empty">No images to show</div>
-
-  <div class="cards" *ngIf="imgList.length">
-    <div class="card" *ngFor="let img of pagedItems">
-      <div class="img-wrap">
-        <img [src]="resolveImageSrc(img)" alt="image" />
-      </div>
-      <div class="card-meta">
-        <div class="meta-id" *ngIf="getImageId(img)">ID: {{ getImageId(img) }}</div>
-        <div class="meta-lang" *ngIf="getImageLang(img)">Lang: {{ getImageLang(img) }}</div>
+  <!-- Image Grid -->
+  <div class="images-grid">
+    <div *ngFor="let image of paginatedImages" class="image-card">
+      <img [src]="getImageSrc(image)" [alt]="getImageId(image)" class="image" />
+      <div class="image-info">
+        <p class="image-id" *ngIf="getImageId(image)">{{ getImageId(image) }}</p>
+        <p class="image-no" *ngIf="getImageLang(image)">{{ getImageLang(image) }}</p>
       </div>
     </div>
   </div>
 
-  <div class="pager" *ngIf="totalPages > 1">
-    <button class="pager-btn" (click)="goTo(1)" [disabled]="currentPage===1">«First</button>
-    <button class="pager-btn" (click)="prev()" [disabled]="currentPage === 1">‹ Prev</button>
+  <div *ngIf="paginatedImages.length === 0" class="empty">No images to display</div>
 
-    <ng-container *ngFor="let p of pageRange">
-      <button class="pager-num" [class.active]="p===currentPage" (click)="goTo(p)">{{ p }}</button>
-    </ng-container>
+  <!-- Sticky Paginator -->
+  <div class="paginator-sticky">
+    <button 
+      class="page-btn prev-btn" 
+      [disabled]="currentPage() === 1"
+      (click)="goToPage(currentPage() - 1)">
+      ← Previous
+    </button>
 
-    <button class="pager-btn" (click)="next()" [disabled]="currentPage === totalPages">Next ›</button>
-    <button class="pager-btn" (click)="goTo(totalPages)" [disabled]="currentPage===totalPages">Last »</button>
+    <div class="page-numbers">
+      <button 
+        *ngFor="let page of pageRange"
+        class="page-btn"
+        [class.active]="page === currentPage()"
+        (click)="goToPage(page)">
+        {{ page }}
+      </button>
+    </div>
+
+    <button 
+      class="page-btn next-btn" 
+      [disabled]="currentPage() === totalPages"
+      (click)="goToPage(currentPage() + 1)">
+      Next →
+    </button>
+
+    <span class="page-info">Page {{ currentPage() }} of {{ totalPages }}</span>
   </div>
 </div>

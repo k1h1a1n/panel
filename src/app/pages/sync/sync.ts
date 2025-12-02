@@ -32,14 +32,14 @@ export class Sync {
   onSocialPosts() { 
     this.apiService.getSocialPost().subscribe((data: any) => {
       const folders = data?.Folders || [];
-      this.router.navigate(['/home/sync/socialpost'], { state: { folders } });
+      this.router.navigate(['/home/sync/coupons'], { state: { folders } });
     });
   }
 
   onBrochures() { 
     this.apiService.getBrochures().subscribe((data: any) => {
       const folders = data?.Folders || [];
-      this.router.navigate(['/home/sync/brochure'], { state: { folders } });
+      this.router.navigate(['/home/sync/brochures'], { state: { folders } });
     });
   }
 }

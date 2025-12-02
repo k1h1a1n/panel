@@ -1,24 +1,78 @@
 <div class="sync-listing-root">
-  <header class="listing-header">
-    <button class="back" *ngIf="canGoBack" (click)="goBack()">← Back</button>
-    <h2>{{ title() }}</h2>
-    <div class="breadcrumb" *ngIf="breadcrumbPath.length">{{ displayBreadcrumb }}</div>
-  </header>
+  <!-- Folders View -->
+  <div *ngIf="displayMode() === 'folders'">
+    <header class="listing-header">
+      <button class="back" *ngIf="canGoBack" (click)="goBack()">← Back</button>
+      <h2>{{ title() }}</h2>
+      <div class="breadcrumb" *ngIf="breadcrumbPath.length">{{ displayBreadcrumb }}</div>
+    </header>
 
-  <div class="search-box">
-    <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search folders..." />
+    <div class="search-box">
+      <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search folders..." />
+    </div>
+
+    <ul class="folder-list">
+      <li *ngFor="let folder of displayFolders" (click)="onFolderClick(folder)" class="folder-item">
+        <div class="folder-content">
+          <div class="folder-name">{{ folder.DisplayName }}</div>
+          <div class="folder-code" *ngIf="folder.Code">{{ folder.Code }}</div>
+        </div>
+        <div class="chevron" *ngIf="folder.Folders && folder.Folders.length">›</div>
+      </li>
+    </ul>
+
+    <div *ngIf="displayFolders.length === 0 && currentFolders.length > 0" class="empty">No folders match your search</div>
+    <div *ngIf="!currentFolders || currentFolders.length === 0" class="empty">No folders available</div>
   </div>
 
-  <ul class="folder-list">
-    <li *ngFor="let folder of displayFolders" (click)="onFolderClick(folder)" class="folder-item">
-      <div class="folder-content">
-        <div class="folder-name">{{ folder.DisplayName }}</div>
-        <div class="folder-code" *ngIf="folder.Code">{{ folder.Code }}</div>
-      </div>
-      <div class="chevron" *ngIf="folder.Folders && folder.Folders.length">›</div>
-    </li>
-  </ul>
+  <!-- Images View -->
+  <div *ngIf="displayMode() === 'images'" class="images-container">
+    <header class="listing-header">
+      <button class="back" (click)="goBackToFolders()">← Back</button>
+      <h2>Images Available for SYNC ({{ nonCommonImages.length }})</h2>
+    </header>
 
-  <div *ngIf="displayFolders.length === 0 && currentFolders.length > 0" class="empty">No folders match your search</div>
-  <div *ngIf="!currentFolders || currentFolders.length === 0" class="empty">No folders available</div>
+    <!-- Image Grid -->
+    <div class="images-grid">
+      <div *ngFor="let image of paginatedImages" class="image-card">
+        <img [src]="getImageSrc(image)" [alt]="image.imgNo" class="image" />
+        <div class="image-info">
+          <p class="image-id">{{ image.id }}</p>
+          <p class="image-no">{{ image.imgNo }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="paginatedImages.length === 0" class="empty">No images to display</div>
+
+    <!-- Sticky Paginator -->
+    <div class="paginator-sticky">
+      <button 
+        class="page-btn prev-btn" 
+        [disabled]="currentPage() === 1"
+        (click)="goToPage(currentPage() - 1)">
+        ← Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of pageRange"
+          class="page-btn"
+          [class.active]="page === currentPage()"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+      </div>
+
+      <button 
+        class="page-btn next-btn" 
+        [disabled]="currentPage() === totalPages"
+        (click)="goToPage(currentPage() + 1)">
+        Next →
+      </button>
+
+      <span class="page-info">Page {{ currentPage() }} of {{ totalPages }}</span>
+    </div>
+
+  </div>
 </div>

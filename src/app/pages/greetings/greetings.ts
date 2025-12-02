@@ -21,6 +21,7 @@ export class Greetings implements OnInit {
   protected searchQuery = signal('');
   private stack: any[][] = [];
   protected breadcrumb: string[] = [];
+  private titleStack: string[] = [];
 
   get displayList(): any[] {
     const query = this.searchQuery().toLowerCase().trim();
@@ -31,6 +32,10 @@ export class Greetings implements OnInit {
   ngOnInit(): void {
     const navState = (history && (history.state as any)) || {};
     const incoming = navState.greetingData || null;
+    const incomingTitle = navState.title || 'Greetings';
+
+    this.title.set(incomingTitle);
+
     if (incoming) {
       // normalize payload (some endpoints wrap in data.data)
       const data = incoming?.data?.data || incoming?.data || incoming;
@@ -60,8 +65,11 @@ export class Greetings implements OnInit {
     if (Array.isArray(subs) && subs.length > 0) {
       // push current list to stack and navigate into subs
       this.stack.push(this.currentList);
+      this.titleStack.push(this.title());
       this.breadcrumb.push(item.name);
       this.currentList = subs;
+      // Update title with the item name
+      this.title.set(item.name);
     } else {
       // leaf node — open images if available
       const imgs = item.imgList ?? item.imgs ?? [];
@@ -84,6 +92,30 @@ export class Greetings implements OnInit {
     });
   }
 
+  /**
+   * Return total images for a category item, including nested subcategories
+   */
+  protected getImageCount(item: any): number {
+    if (!item) return 0;
+    let total = 0;
+    const addIfArray = (v: any) => {
+      if (Array.isArray(v)) total += v.length;
+    };
+
+    addIfArray(item.imgList);
+    addIfArray(item.imgs);
+    addIfArray(item.images);
+
+    const subs = item.subCategories || item.subcategories || item.children || [];
+    if (Array.isArray(subs) && subs.length) {
+      for (const s of subs) {
+        total += this.getImageCount(s);
+      }
+    }
+
+    return total;
+  }
+
   goBack(): void {
     if (this.stack.length === 0) {
       // if no local stack, go back in browser history
@@ -92,5 +124,7 @@ export class Greetings implements OnInit {
     }
     this.currentList = this.stack.pop() || [];
     this.breadcrumb.pop();
+    const previousTitle = this.titleStack.pop() || 'Greetings';
+    this.title.set(previousTitle);
   }
 }

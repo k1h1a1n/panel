@@ -1,8 +1,10 @@
 <div class="greetings-root">
   <header class="greetings-header">
     <button class="back" *ngIf="breadcrumb.length" (click)="goBack()">← Back</button>
-    <h2>{{ title() }}</h2>
-    <div class="crumbs" *ngIf="breadcrumb.length">{{ breadcrumb.join(' / ') }}</div>
+    <div class="header-content">
+      <h2 class="header-title">{{ title() }}</h2>
+      <div class="breadcrumb" *ngIf="breadcrumb.length">{{ breadcrumb.join(' / ') }}</div>
+    </div>
   </header>
 
   <div class="search-box">
@@ -11,10 +13,13 @@
 
   <ul class="greetings-list">
     <li *ngFor="let item of displayList" (click)="onItemClick(item)" class="greetings-item">
-      <div class="name">{{ item.name }}</div>
-      <div class="actions">
-        <button class="images-btn" *ngIf="(item.imgList && item.imgList.length) || (item.imgs && item.imgs.length)" (click)="openImages(item, $event)">Images</button>
-        <div class="chev" *ngIf="(item.subCategories && item.subCategories.length) || (item.subcategories && item.subcategories.length)">›</div>
+      <div class="item-name">{{ item.name }}</div>
+      <div class="item-actions">
+        <div class="image-count" *ngIf="getImageCount(item) > 0">
+          <span class="count-label">Images:</span>
+          <span class="count-value">{{ getImageCount(item) }}</span>
+        </div>
+        <div class="chevron" *ngIf="(item.subCategories && item.subCategories.length) || (item.subcategories && item.subcategories.length)">›</div>
       </div>
     </li>
   </ul>

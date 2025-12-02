@@ -15,18 +15,21 @@
       <div class="card-icon">🎉</div>
       <h2 class="card-title">Greetings</h2>
       <p class="card-desc">General greetings collection and templates.</p>
+      <div class="card-meta"><span class="image-count">{{ greetingsCount() }} images</span></div>
     </a>
 
     <a class="card" role="button" tabindex="0" aria-label="Social Posts" (click)="onDayGreetings('socailpostData')">
       <div class="card-icon">💬</div>
       <h2 class="card-title">Social Posts</h2>
       <p class="card-desc">Schedule and edit social media posts.</p>
+      <div class="card-meta"><span class="image-count">{{ socialCount() }} images</span></div>
     </a>
 
     <a class="card" role="button" tabindex="0" aria-label="Brochures" (click)="onDayGreetings('brouchersData')">
       <div class="card-icon">📄</div>
       <h2 class="card-title">Brochures</h2>
       <p class="card-desc">Design and distribute brochures.</p>
+      <div class="card-meta"><span class="image-count">{{ brochureCount() }} images</span></div>
     </a>
   </main>
 
