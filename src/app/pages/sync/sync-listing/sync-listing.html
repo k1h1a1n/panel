@@ -1,9 +1,21 @@
 <div class="sync-listing-root">
   <!-- Folders View -->
   <div *ngIf="displayMode() === 'folders'">
-    <header class="listing-header">
-      <button class="back" *ngIf="canGoBack" (click)="goBack()">← Back</button>
-      <h2>{{ title() }}</h2>
+    <header class="listing-header gradient">
+      <div class="header-left">
+        <div class="header-row">
+          <button class="back" *ngIf="canGoBack" (click)="goBack()">←</button>
+          <h2>{{ title() }}</h2>
+        </div>
+        <p class="subtitle">Browse folders and see image counts at-a-glance</p>
+      </div>
+      <div class="header-right">
+        <div class="counts">
+          <span class="count-item">Greetings <span class="badge">{{ greetingsCount() }}</span></span>
+          <span class="count-item">Social <span class="badge">{{ socialCount() }}</span></span>
+          <span class="count-item">Brochures <span class="badge">{{ brochureCount() }}</span></span>
+        </div>
+      </div>
       <div class="breadcrumb" *ngIf="breadcrumbPath.length">{{ displayBreadcrumb }}</div>
     </header>
 
@@ -11,13 +23,16 @@
       <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search folders..." />
     </div>
 
-    <ul class="folder-list">
-      <li *ngFor="let folder of displayFolders" (click)="onFolderClick(folder)" class="folder-item">
-        <div class="folder-content">
+    <ul class="folder-list folder-grid">
+      <li *ngFor="let folder of displayFolders" (click)="onFolderClick(folder)" class="folder-card">
+        <div class="card-body">
           <div class="folder-name">{{ folder.DisplayName }}</div>
           <div class="folder-code" *ngIf="folder.Code">{{ folder.Code }}</div>
         </div>
-        <div class="chevron" *ngIf="folder.Folders && folder.Folders.length">›</div>
+        <div class="card-meta">
+          <span class="count-badge">{{ (folder.imgList?.length || folder.imgs?.length || folder.images?.length) || 0 }}</span>
+          <div class="chevron" *ngIf="folder.Folders && folder.Folders.length">›</div>
+        </div>
       </li>
     </ul>
 
