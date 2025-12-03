@@ -40,6 +40,8 @@ export class ImagePreview implements OnInit {
         this.imgList = Array.isArray(state.imgList) ? state.imgList : [];
         this.parentList = Array.isArray(state.parentList) ? state.parentList : [];
         this.parentBreadcrumb = Array.isArray(state.breadcrumb) ? state.breadcrumb : [];
+        const incomingTitle = state.title || 'Images';
+        this.title = incomingTitle;
     }
 
     get totalPages(): number {

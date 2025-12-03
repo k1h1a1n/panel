@@ -98,7 +98,12 @@ export class Listing implements OnInit {
 
         // Navigate to greetings component with fetched data (passed via state)
         try {
-          this.router.navigate(['/home/greetings'], { state: { greetingData: data } });
+          const titlMap : any = {
+            'greetingData' : 'Greetings',
+            'socailpostData' : 'Social Posts',
+            'brouchersData' : 'Brochures'
+          }
+          this.router.navigate(['/home/greetings'], { state: { greetingData: data , title : titlMap[apiPoint] } });
         } catch (e) {
           console.error('Navigation to greetings failed', e);
         }

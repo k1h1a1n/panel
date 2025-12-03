@@ -11,6 +11,9 @@ interface FolderItem {
     Country?: string;
     Folders?: FolderItem[];
     Events?: any[];
+    imgList?: any[];
+    imgs?: any[];
+    images?: any[];
 }
 
 @Component({
@@ -205,7 +208,7 @@ export class SyncListing implements OnInit {
         return [];
     }
 
-    isSimilar(a: string, b: string, threshold: number = 0.60): boolean {
+    isSimilar(a: string, b: string, threshold: number = 0.50): boolean {
         // Compare only up to the shortest string length
         const maxLength = Math.max(a.length, b.length);
         let matches = 0;

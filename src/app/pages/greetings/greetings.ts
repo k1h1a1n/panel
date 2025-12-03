@@ -73,23 +73,15 @@ export class Greetings implements OnInit {
     } else {
       // leaf node — open images if available
       const imgs = item.imgList ?? item.imgs ?? [];
+      console.log('Leaf item clicked', item);
       if (Array.isArray(imgs) && imgs.length > 0) {
         this.router.navigate(['/home/greetings/images'], {
-          state: { imgList: imgs, parentList: this.currentList, breadcrumb: this.breadcrumb }
+          state: { imgList: imgs, parentList: this.currentList, breadcrumb: this.breadcrumb , title : item.name }
         });
         return;
       }
       console.log('Selected leaf item', item);
     }
-  }
-
-  openImages(item: any, $event?: Event): void {
-    if ($event) $event.stopPropagation();
-    const imgs = item.imgList ?? item.imgs ?? [];
-    if (!Array.isArray(imgs) || imgs.length === 0) return;
-    this.router.navigate(['/home/greetings/images'], {
-      state: { imgList: imgs, parentList: this.currentList, breadcrumb: this.breadcrumb }
-    });
   }
 
   /**

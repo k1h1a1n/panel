@@ -8,18 +8,20 @@
   </header>
 
   <div class="search-box">
-    <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" placeholder="Search categories..." />
+    <input type="text" [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)"
+      placeholder="Search categories..." />
   </div>
 
-  <ul class="greetings-list">
-    <li *ngFor="let item of displayList" (click)="onItemClick(item)" class="greetings-item">
-      <div class="item-name">{{ item.name }}</div>
-      <div class="item-actions">
-        <div class="image-count" *ngIf="getImageCount(item) > 0">
-          <span class="count-label">Images:</span>
-          <span class="count-value">{{ getImageCount(item) }}</span>
-        </div>
-        <div class="chevron" *ngIf="(item.subCategories && item.subCategories.length) || (item.subcategories && item.subcategories.length)">›</div>
+  <ul class="folder-list folder-grid">
+    <li *ngFor="let item of displayList" (click)="onItemClick(item)" class="folder-card">
+      <div class="card-body" style="letter-spacing: 0.6px;">
+        <div class="folder-name">{{ item.name }}</div>
+        <div class="folder-code" *ngIf="item.Code">{{ item.Code }}</div>
+      </div>
+      <div class="card-meta">
+        <div style="font-size: 11px;">Image Count</div>
+        <span class="count-badge" *ngIf="getImageCount(item) > 0">{{ getImageCount(item) }}</span>
+        <!-- <div class="chevron">›</div> -->
       </div>
     </li>
   </ul>
