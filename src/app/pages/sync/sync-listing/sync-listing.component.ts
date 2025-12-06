@@ -181,7 +181,7 @@ export class SyncListing implements OnInit {
         };
 
         const normalizedSecond = normalize(secondPart);
-        const normalizedThird = normalize(thirdPart);
+        let normalizedThird = normalize(thirdPart);
 
         if (normalizedSecond && isGreeting) {
             // Three levels: search for second part category, then third part subcategory
@@ -198,6 +198,10 @@ export class SyncListing implements OnInit {
         } else if (!isGreeting) {
             // Two levels: search for second part only (social post, brochures)
             for (const item of apiData) {
+                if(normalizedThird === 'socialpost' ){
+                    normalizedThird = 'concept0501to0600';
+                    // Concept- 0501 to 0600
+                }
                 const similar = normalize(item.name);
                 if (item.name && this.isSimilar(similar, normalizedThird)) {
                     return item.imgList || [];
@@ -208,7 +212,7 @@ export class SyncListing implements OnInit {
         return [];
     }
 
-    isSimilar(a: string, b: string, threshold: number = 0.50): boolean {
+    isSimilar(a: string, b: string, threshold: number = 0.65): boolean {
         // Compare only up to the shortest string length
         const maxLength = Math.max(a.length, b.length);
         let matches = 0;

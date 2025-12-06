@@ -22,6 +22,8 @@ export class Greetings implements OnInit {
   private stack: any[][] = [];
   protected breadcrumb: string[] = [];
   private titleStack: string[] = [];
+  protected editingMap: Record<number, boolean> = {};
+  protected editDateMap: Record<number, string> = {};
 
   get displayList(): any[] {
     const query = this.searchQuery().toLowerCase().trim();
@@ -108,6 +110,36 @@ export class Greetings implements OnInit {
     return total;
   }
 
+  protected formatDate(dateStr?: string): string {
+    if (!dateStr) return '';
+    const s = dateStr.trim();
+    // Handle ISO format YYYY-MM-DD
+    const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(s);
+    let day = '';
+    let monthNum = 0;
+    let year = '';
+
+    if (isoMatch) {
+      const parts = s.split('-');
+      year = parts[0];
+      monthNum = parseInt(parts[1], 10);
+      day = parts[2];
+    } else if (/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(s)) {
+      const parts = s.split(/[-\/]/);
+      day = parts[0];
+      monthNum = parseInt(parts[1], 10);
+      year = parts[2];
+    } else {
+      return dateStr;
+    }
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[(monthNum || 1) - 1] || String(monthNum);
+    // Ensure day is two digits
+    if (day.length === 1) day = day.padStart(2, '0');
+    return `${day}/${month}/${year}`;
+  }
+
   goBack(): void {
     if (this.stack.length === 0) {
       // if no local stack, go back in browser history
@@ -118,5 +150,38 @@ export class Greetings implements OnInit {
     this.breadcrumb.pop();
     const previousTitle = this.titleStack.pop() || 'Greetings';
     this.title.set(previousTitle);
+  }
+
+  protected startEdit(index: number, item: any, evt?: Event): void {
+    if (evt) evt.stopPropagation();
+    this.editingMap[index] = true;
+    // prefill with ISO yyyy-mm-dd if possible
+    const v = item.eventDate || '';
+    if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+      this.editDateMap[index] = v.substring(0, 10);
+    } else if (/^\d{2}[-\/]\d{2}[-\/]\d{4}$/.test(v)) {
+      // convert DD-MM-YYYY to YYYY-MM-DD for input[type=date]
+      const parts = v.split(/[-\/]/);
+      this.editDateMap[index] = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    } else {
+      this.editDateMap[index] = '';
+    }
+  }
+
+  protected saveDate(index: number, item: any, evt?: Event): void {
+    if (evt) evt.stopPropagation();
+    const newDate = this.editDateMap[index];
+    if (newDate) {
+      // store as ISO yyyy-mm-dd (matches existing samples)
+      item.eventDate = newDate;
+    }
+    this.editingMap[index] = false;
+    delete this.editDateMap[index];
+  }
+
+  protected cancelEdit(index: number, evt?: Event): void {
+    if (evt) evt.stopPropagation();
+    this.editingMap[index] = false;
+    delete this.editDateMap[index];
   }
 }

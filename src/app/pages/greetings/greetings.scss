@@ -257,7 +257,7 @@
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  min-height:72px;
+  min-height:96px; /* increased so edit controls don't expand card on toggle */
   box-shadow: 0 4px 14px rgba(17,24,39,0.04);
   cursor:pointer;
   transition: transform .14s ease, box-shadow .14s ease;
@@ -268,6 +268,83 @@
 .card-body { display:flex; flex-direction:column; }
 .folder-name { font-weight:600; font-size:14px; color:#0b2140; }
 .folder-code { font-size:12px; color:#64748b; margin-top:6px; }
+
+/* Date display & edit controls */
+.folder-date {
+  font-size: 12px;
+  color: #475569;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-date-btn {
+  background: transparent;
+  border: 1px solid rgba(67,56,202,0.12);
+  color: #4338ca;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background .12s ease, transform .12s ease;
+}
+.edit-date-btn:hover { background: rgba(67,56,202,0.06); transform: translateY(-1px); }
+
+.folder-date-edit {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.folder-date-edit input[type="date"] {
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 12px;
+  min-width: 100px;
+  max-width: 140px;
+  flex: 0 0 auto;
+}
+
+.save-btn, .cancel-btn {
+  padding: 4px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  border: none;
+  flex: 0 0 auto;
+}
+.save-btn {
+  background: #0b84ff;
+  color: #fff;
+}
+.save-btn:hover { filter: brightness(.98); }
+.cancel-btn {
+  background: transparent;
+  border: 1px solid #e6e9ee;
+  color: #475569;
+  padding: 4px;
+}
+
+/* Prevent controls from overflowing the card */
+.folder-card { overflow: hidden; }
+
+/* Minor layout tweaks for compact cards */
+.folder-card { padding: 8px; min-height:120px; }
+.folder-name { font-size: 15px; }
+.card-meta { margin-top: 10px; }
+
+@media (max-width: 720px) {
+  .folder-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+}
 
 .card-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }
 .count-badge { background:#eef2ff; color:#4338ca; padding:6px 8px; border-radius:999px; font-weight:600; font-size:12px; }

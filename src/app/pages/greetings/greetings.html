@@ -13,10 +13,19 @@
   </div>
 
   <ul class="folder-list folder-grid">
-    <li *ngFor="let item of displayList" (click)="onItemClick(item)" class="folder-card">
+    <li *ngFor="let item of displayList; let i = index" (click)="onItemClick(item)" class="folder-card">
       <div class="card-body" style="letter-spacing: 0.6px;">
         <div class="folder-name">{{ item.name }}</div>
         <div class="folder-code" *ngIf="item.Code">{{ item.Code }}</div>
+          <div class="folder-date" *ngIf="item.eventDate && !editingMap[i]">
+            {{ formatDate(item.eventDate) }}
+            <button class="edit-date-btn" (click)="startEdit(i, item, $event)">Edit</button>
+          </div>
+          <div class="folder-date-edit" *ngIf="editingMap[i]" (click)="$event.stopPropagation()">
+            <input type="date" [value]="editDateMap[i] || item.eventDate" (input)="editDateMap[i] = $any($event.target).value" />
+            <button class="save-btn" (click)="saveDate(i, item, $event)">Save</button>
+            <button class="cancel-btn" (click)="cancelEdit(i, $event)">Cancel</button>
+          </div>
       </div>
       <div class="card-meta">
         <div style="font-size: 11px;">Image Count</div>
