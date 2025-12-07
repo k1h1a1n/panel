@@ -19,6 +19,7 @@ export class ImagePreview implements OnInit {
     protected imgList: any[] = [];
     protected parentList: any[] = [];
     protected parentBreadcrumb: string[] = [];
+    protected pathInfo: { root?: string; second?: string; third?: string } = { root: 'Greetings' };
 
     // pagination
     protected pageSize = 5;
@@ -43,6 +44,20 @@ export class ImagePreview implements OnInit {
         this.parentBreadcrumb = Array.isArray(state.breadcrumb) ? state.breadcrumb : [];
         const incomingTitle = state.title || 'Images';
         this.title = incomingTitle;
+
+        const rawPathSegments = Array.isArray(state.pathSegments)
+            ? state.pathSegments
+            : [...this.parentBreadcrumb, this.title];
+        const lastTwo = rawPathSegments.slice(-2);
+        this.pathInfo = {
+            root: 'Greetings',
+            second: lastTwo[0] || '',
+            third: lastTwo[1] || '',
+        };
+
+        if (Array.isArray(this.imgList)) {
+            this.imgList = this.imgList.map((img: any) => ({ ...img, pathInfo: img?.pathInfo || this.pathInfo }));
+        }
     }
 
     get totalPages(): number {

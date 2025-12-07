@@ -45,11 +45,17 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && req.url.startsWith('/files/')) {
+  const urlPath = safePathname(req.url);
+
+  if (req.method === 'GET' && urlPath.startsWith('/files/')) {
     return serveOutputFile(req, res);
   }
 
-  if (req.method !== 'POST' || req.url !== '/download-image') {
+  if (req.method === 'POST' && urlPath === '/delete-image') {
+    return handleDeleteRequest(req, res);
+  }
+
+  if (req.method !== 'POST' || urlPath !== '/download-image') {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ success: false, message: 'Not found' }));
     return;
@@ -78,6 +84,30 @@ server.listen(PORT, () => {
   console.log(`Sync download server listening on http://localhost:${PORT}`);
 });
 
+async function handleDeleteRequest(req, res) {
+  let body = '';
+  req.on('data', (chunk) => (body += chunk));
+  req.on('end', async () => {
+    try {
+      const payload = JSON.parse(body || '{}');
+      if (!payload.imgNo && !payload.id && !payload.folderName) {
+        respondJson(res, 400, { success: false, message: 'imgNo or id is required' });
+        return;
+      }
+
+      const folderName = sanitizeName(payload.imgNo || payload.id || payload.folderName);
+      const targetDir = buildTargetDirectory(payload.pathInfo || {}, folderName);
+      console.log(`[delete-image] request`, { folderName, targetDir, pathInfo: payload.pathInfo });
+      const deletion = await deleteDesignFolder(targetDir, folderName);
+
+      respondJson(res, 200, { success: true, folderName, targetDir, ...deletion });
+    } catch (error) {
+      console.error('Delete error', error);
+      respondJson(res, 500, { success: false, message: error.message || 'Delete failed' });
+    }
+  });
+}
+
 async function processPayload(payload) {
   const convertedUrl = convertUrl(payload.link);
   const fileName = path.basename(new URL(convertedUrl).pathname);
@@ -90,7 +120,7 @@ async function processPayload(payload) {
   const targetDir = buildTargetDirectory(payload.pathInfo || {}, folderName);
   const { zipPath, previewPath } = await zipFolder(folderName, processedFolder, targetDir);
 
-  return { folderName, zipPath, previewPath, targetDir };
+  return { folderName, zipPath: toForwardSlashes(zipPath), previewPath: toForwardSlashes(previewPath), targetDir: toForwardSlashes(targetDir) };
 }
 
 async function downloadFile(url, outputPath) {
@@ -635,6 +665,104 @@ function getContentType(filePath) {
   if (ext === '.png') return 'image/png';
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
   return 'application/zip';
+}
+
+function safePathname(url = '') {
+  try {
+    return new URL(url, 'http://localhost').pathname;
+  } catch {
+    return url.split('?')[0] || url;
+  }
+}
+
+function normalizeKey(name = '') {
+  return name.toString().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function resolveExistingPath(baseDir, targetPath) {
+  const relative = path.relative(baseDir, targetPath);
+  const segments = relative.split(path.sep).filter(Boolean);
+  let current = baseDir;
+
+  for (const seg of segments) {
+    let next = path.join(current, seg);
+    let matched = false;
+    try {
+      if (fs.existsSync(current)) {
+        const entries = fs.readdirSync(current, { withFileTypes: true });
+        const normalizedSeg = normalizeKey(seg);
+        const exact = entries.find((e) => e.isDirectory() && normalizeKey(e.name) === normalizedSeg);
+        if (exact) {
+          next = path.join(current, exact.name);
+          matched = true;
+        } else {
+          const fuzzy = entries.find(
+            (e) =>
+              e.isDirectory() &&
+              (normalizeKey(e.name).startsWith(normalizedSeg) || normalizedSeg.startsWith(normalizeKey(e.name)))
+          );
+          if (fuzzy) {
+            next = path.join(current, fuzzy.name);
+            matched = true;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[delete-image] resolve warning at ${current}:`, err.message);
+    }
+    if (!matched) {
+      console.log(`[delete-image] no match for segment "${seg}" under ${current}, using ${next}`);
+    }
+    current = next;
+  }
+
+  return current;
+}
+
+function toForwardSlashes(p = '') {
+  return (p || '').replace(/\\/g, '/');
+}
+
+async function deleteDesignFolder(targetDir, folderName) {
+  const normalizedTarget = path.normalize(targetDir);
+  const normalizedBase = path.normalize(DELIVERY_BASE_PATH);
+
+  if (!normalizedTarget.startsWith(normalizedBase)) {
+    throw new Error('Invalid delete path');
+  }
+
+  const resolvedTarget = resolveExistingPath(normalizedBase, normalizedTarget);
+  console.log(`[delete-image] resolved path: ${resolvedTarget}`);
+
+  const zipPath = path.join(resolvedTarget, `${folderName}.zip`);
+  const previewPath = path.join(resolvedTarget, 'preview.png');
+
+  const result = {
+    removedFolder: false,
+    removedZip: false,
+    removedPreview: false,
+  };
+
+  if (await fs.pathExists(resolvedTarget)) {
+    console.log(`[delete-image] removing folder ${resolvedTarget}`);
+    await fs.remove(resolvedTarget);
+    result.removedFolder = true;
+    return result;
+  }
+
+  if (await fs.pathExists(zipPath)) {
+    console.log(`[delete-image] removing zip ${zipPath}`);
+    await fs.remove(zipPath);
+    result.removedZip = true;
+  }
+
+  if (await fs.pathExists(previewPath)) {
+    console.log(`[delete-image] removing preview ${previewPath}`);
+    await fs.remove(previewPath);
+    result.removedPreview = true;
+  }
+
+  return result;
 }
 
 function buildTargetDirectory(pathInfo = {}, folderName = 'design') {

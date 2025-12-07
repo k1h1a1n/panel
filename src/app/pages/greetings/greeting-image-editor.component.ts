@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { LoaderService } from '../../shared/services/loader.service';
 
 @Component({
   selector: 'app-greeting-image-editor',
@@ -13,6 +14,8 @@ export class GreetingImageEditor {
   @Output() updated = new EventEmitter<any>();
   @Output() deleted = new EventEmitter<any>();
   @Output() closed = new EventEmitter<void>();
+
+  private loaderService = inject(LoaderService);
 
   // language mapping for dropdown
   public languages = [
@@ -49,7 +52,7 @@ export class GreetingImageEditor {
     this.confirmShow = true;
   }
 
-  protected onConfirmDecision(result: boolean) {
+  protected async onConfirmDecision(result: boolean) {
     this.confirmShow = false;
     if (!result) {
       this.pendingAction = null;
@@ -73,8 +76,13 @@ export class GreetingImageEditor {
       }
     } else if (this.pendingAction === 'delete') {
       if (this.image) {
-        this.deleteImageApi(this.image);
-        this.deleted.emit(this.image);
+        try {
+          await this.deleteImageApi(this.image);
+          this.deleted.emit(this.image);
+        } catch (err: any) {
+          const msg = err?.message || 'Delete failed';
+          this.loaderService.setError(msg);
+        }
       }
     }
 
@@ -111,8 +119,32 @@ export class GreetingImageEditor {
     console.log('enableDisableApi stub', enabled, image);
   }
 
-  private deleteImageApi(image: any): void {
-    // TODO: call backend to delete image
-    console.log('deleteImageApi stub', image);
+  private async deleteImageApi(image: any): Promise<void> {
+    if (!image) throw new Error('No image to delete');
+
+    const payload = {
+      id: image.id,
+      imgNo: image.imgNo || image.imageId || image.code,
+      pathInfo: image.pathInfo,
+    };
+    
+    const response = await fetch('http://localhost:4300/delete-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error: ${response.status} ${text}`);
+    }
+
+    const json = await response.json();
+    if (!json.success) {
+      throw new Error(json.message || 'Delete failed');
+    }
+
+    const targetPath = json.targetDir || 'target folder';
+    this.loaderService.setSuccess(`Image deleted from ${targetPath}`);
   }
 }

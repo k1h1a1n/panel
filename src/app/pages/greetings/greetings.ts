@@ -77,8 +77,9 @@ export class Greetings implements OnInit {
       const imgs = item.imgList ?? item.imgs ?? [];
       console.log('Leaf item clicked', item);
       if (Array.isArray(imgs) && imgs.length > 0) {
+        const pathSegments = [...this.breadcrumb, item.name];
         this.router.navigate(['/home/greetings/images'], {
-          state: { imgList: imgs, parentList: this.currentList, breadcrumb: this.breadcrumb , title : item.name }
+          state: { imgList: imgs, parentList: this.currentList, breadcrumb: this.breadcrumb , title : item.name, pathSegments }
         });
         return;
       }

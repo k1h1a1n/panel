@@ -1,8 +1,8 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { SharedApiService, LoaderService } from '../../../shared';
-import { map } from 'rxjs';
+import { SharedApiService, LoaderService, CrudService } from '../../../shared';
+import { map, firstValueFrom } from 'rxjs';
 import { SyncImageModalComponent } from './sync-image-modal.component';
 
 interface FolderItem {
@@ -29,6 +29,7 @@ export class SyncListing implements OnInit {
     private location = inject(Location);
     private sharedService = inject(SharedApiService);
     private loaderService = inject(LoaderService);
+    private crudService = inject(CrudService);
 
     protected title = signal('Folders');
     protected currentFolders: FolderItem[] = [];
@@ -300,9 +301,52 @@ export class SyncListing implements OnInit {
             throw new Error(json.message || 'Download failed');
         }
 
+        try {
+            await this.insertSyncedRecord(json, image);
+        } catch (err: any) {
+            console.error('Insert API failed', err);
+            this.loaderService.setError(err?.message || 'Insert failed');
+        }
+
         const successMsg = `Sync completed. Saved to ${json.zipPath || 'target folder'}`;
         this.loaderService.setSuccess(successMsg);
         console.log('Sync completed. Zip stored at:', json.zipPath, 'Preview at:', json.previewPath);
+    }
+
+    private async insertSyncedRecord(json: any, image: any): Promise<void> {
+        const mainCategory = this.formatSegment(this.downloadPathInfo.second || '');
+        const subcategory = this.formatSegment(this.downloadPathInfo.third || '');
+        const payload = {
+            imageId: image?.imgNo || image?.id || '',
+            mainCategory,
+            subcategory,
+            downloadUrl: this.toRelativePath(json?.zipPath || image?.link || ''),
+            prevImgUrl: this.toRelativePath(json?.previewPath || image?.imagePreviewUrl || image?.link || ''),
+            eventDate: image?.eventDate || null,
+            isVisible: 1,
+            language: image?.lang || 'EN',
+        };
+        console.log('Inserting record via API', payload);
+        // await firstValueFrom(this.crudService.create(payload, 'greetings'));
+    }
+
+    private formatSegment(name: string): string {
+        return (name || '')
+            .toString()
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/([A-Za-z])([0-9])/g, '$1 $2')
+            .replace(/([0-9])([A-Za-z])/g, '$1 $2')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    private toRelativePath(p: string): string {
+        if (!p) return '';
+        const normalized = p.replace(/\\/g, '/');
+        const idx = normalized.toLowerCase().indexOf('brandxpressdata/');
+        const relative = idx !== -1 ? normalized.substring(idx) : normalized;
+        return relative;
     }
 
     protected goToPage(page: number): void {
