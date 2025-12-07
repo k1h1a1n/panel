@@ -293,7 +293,7 @@ export class SyncListing implements OnInit {
             throw new Error(json.message || 'Download failed');
         }
 
-        console.log('Sync completed. Assets saved at:', json.assetPath);
+        console.log('Sync completed. Zip stored at:', json.zipPath, 'Preview at:', json.previewPath);
     }
 
     protected goToPage(page: number): void {

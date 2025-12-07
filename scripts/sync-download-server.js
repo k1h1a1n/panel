@@ -19,12 +19,10 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const DOWNLOAD_DIR = path.join(PROJECT_ROOT, 'downloads');
 const PROCESSED_DIR = path.join(DOWNLOAD_DIR, 'processed_files');
 const OUTPUT_DIR = path.join(PROCESSED_DIR, 'output');
-const ASSETS_DIR = path.join(PROJECT_ROOT, 'src', 'assets', 'synced');
 
 fs.ensureDirSync(DOWNLOAD_DIR);
 fs.ensureDirSync(PROCESSED_DIR);
 fs.ensureDirSync(OUTPUT_DIR);
-fs.ensureDirSync(ASSETS_DIR);
 
 const TARGET_IMAGE_SIZE_BYTES = 150 * 1024; // 150 KB cap per image
 const PNG_QUALITY_STEPS = [
@@ -89,10 +87,7 @@ async function processPayload(payload) {
   const { folderName, processedFolder } = await extractAndProcess(downloadPath, payload);
   const { zipPath, previewPath } = await zipFolder(folderName, processedFolder);
 
-  const assetZipPath = path.join(ASSETS_DIR, `${folderName}.zip`);
-  await fs.copy(zipPath, assetZipPath, { overwrite: true });
-
-  return { folderName, assetPath: assetZipPath, previewPath };
+  return { folderName, zipPath, previewPath };
 }
 
 async function downloadFile(url, outputPath) {
