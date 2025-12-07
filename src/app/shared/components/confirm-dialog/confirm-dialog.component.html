@@ -1,0 +1,14 @@
+<div class="confirm-root" *ngIf="show">
+  <div class="confirm-backdrop" (click)="close()"></div>
+  <div class="confirm-card" role="dialog" aria-modal="true">
+    <div class="confirm-header">
+      <strong>{{ title }}</strong>
+      <button class="close" (click)="close()">✕</button>
+    </div>
+    <div class="confirm-body">{{ msg }}</div>
+    <div class="confirm-actions">
+      <button class="btn btn-no" (click)="no()">No</button>
+      <button class="btn btn-yes" (click)="yes()">Yes</button>
+    </div>
+  </div>
+</div>

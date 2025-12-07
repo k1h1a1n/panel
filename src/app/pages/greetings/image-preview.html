@@ -6,7 +6,7 @@
 
   <!-- Image Grid -->
   <div class="images-grid">
-    <div *ngFor="let image of paginatedImages" class="image-card">
+    <div *ngFor="let image of paginatedImages" class="image-card" (click)="openEditor(image)">
       <img [src]="getImageSrc(image)" [alt]="getImageId(image)" class="image" />
       <div class="image-info">
         <p class="image-id" *ngIf="getImageId(image)">{{ getImageId(image) }}</p>
@@ -16,6 +16,14 @@
   </div>
 
   <div *ngIf="paginatedImages.length === 0" class="empty">No images to display</div>
+
+  <!-- Greeting Image Editor modal -->
+  <app-greeting-image-editor *ngIf="selectedImage"
+    [image]="selectedImage"
+    (closed)="onEditorClosed()"
+    (updated)="onEditorUpdated($event)"
+    (deleted)="onEditorDeleted($event)">
+  </app-greeting-image-editor>
 
   <!-- Sticky Paginator -->
   <div class="paginator-sticky">

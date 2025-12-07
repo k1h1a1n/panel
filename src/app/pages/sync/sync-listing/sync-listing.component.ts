@@ -3,6 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SharedApiService } from '../../../shared';
 import { map } from 'rxjs';
+import { SyncImageModalComponent } from './sync-image-modal.component';
 
 interface FolderItem {
     FolderName: string;
@@ -20,7 +21,7 @@ interface FolderItem {
     selector: 'app-sync-listing',
     templateUrl: './sync-listing.html',
     styleUrl: './sync-listing.scss',
-    imports: [CommonModule],
+    imports: [CommonModule, SyncImageModalComponent],
 })
 export class SyncListing implements OnInit {
     private router = inject(Router);
@@ -40,6 +41,8 @@ export class SyncListing implements OnInit {
     protected nonCommonImages: any[] = []; // Store non-common images
     protected currentPage = signal(1);
     protected pageSize = 5;
+    protected selectedImage: any = null;
+    protected imageModalVisible = false;
 
     get paginatedImages(): any[] {
         const start = (this.currentPage() - 1) * this.pageSize;
@@ -231,6 +234,28 @@ export class SyncListing implements OnInit {
         return image.link || '';
     }
 
+    protected openImageModal(image: any): void {
+        this.selectedImage = image;
+        this.imageModalVisible = true;
+    }
+
+    protected closeImageModal(): void {
+        this.imageModalVisible = false;
+        this.selectedImage = null;
+    }
+
+    protected onLanguageChanged(event: { lang: string; image: any }): void {
+        if (event?.image) {
+            event.image.lang = event.lang;
+            console.log('Language changed', event);
+        }
+    }
+
+    protected onSyncRequested(image: any): void {
+        console.log('Sync requested for image', image);
+        this.closeImageModal();
+    }
+
     protected goToPage(page: number): void {
         if (page >= 1 && page <= this.totalPages) {
             this.currentPage.set(page);
@@ -327,4 +352,8 @@ export class SyncListing implements OnInit {
     get displayBreadcrumb(): string {
         return this.breadcrumbPath.length ? this.breadcrumbPath.join(' > ') : 'Root';
     }
+    onImageClick(image: any): void {
+        if (!image) return;
+        this.openImageModal(image);
+    }   
 }

@@ -1,0 +1,32 @@
+<div class="sync-image-modal" *ngIf="visible">
+  <div class="modal-backdrop" (click)="close()"></div>
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <p class="modal-subtitle">Image Preview</p>
+        <h3>{{ image?.imgNo || 'Image' }}</h3>
+      </div>
+      <button class="close-btn" (click)="close()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-preview">
+        <img [src]="imagePreviewUrl" [alt]="image?.imgNo" />
+      </div>
+      <div class="modal-controls">
+        <div class="control-block">
+          <label>Language</label>
+          <select [value]="image?.lang || 'EN'" (change)="startLanguageChange($any($event.target).value)">
+            <option *ngFor="let lang of languages" [value]="lang.code">{{ lang.label }}</option>
+          </select>
+        </div>
+        <div class="control-block">
+          <label>Sync</label>
+          <button class="sync-btn" (click)="startSync()">Sync Now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-confirm-dialog [show]="confirmShow" [msg]="confirmMsg" [title]="confirmTitle" (decision)="onConfirmDecision($event)"></app-confirm-dialog>
+</div>

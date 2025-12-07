@@ -1,12 +1,13 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { GreetingImageEditor } from './greeting-image-editor.component';
 import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-greetings-images',
     templateUrl: './image-preview.html',
     styleUrl: './image-preview.scss',
-    imports: [CommonModule],
+    imports: [CommonModule, GreetingImageEditor],
 })
 export class ImagePreview implements OnInit {
 
@@ -98,5 +99,28 @@ export class ImagePreview implements OnInit {
 
     protected getImageSrc(image: any): string {
         return this.resolveImageSrc(image);
+    }
+
+    protected selectedImage: any = null;
+
+    protected openEditor(img: any): void {
+        this.selectedImage = img;
+    }
+
+    protected onEditorClosed(): void {
+        this.selectedImage = null;
+    }
+
+    protected onEditorUpdated(ev: any): void {
+        // ev: { type: 'language'|'enabled', image }
+        console.log('editor updated', ev);
+        // placeholder: you may persist changes or refresh list
+    }
+
+    protected onEditorDeleted(img: any): void {
+        console.log('editor deleted', img);
+        // remove from local list
+        this.imgList = this.imgList.filter((i: any) => i !== img);
+        this.selectedImage = null;
     }
 }

@@ -52,7 +52,7 @@
 
         <!-- Image Grid -->
         <div class="images-grid">
-            <div *ngFor="let image of paginatedImages" class="image-card">
+            <div *ngFor="let image of paginatedImages" class="image-card" (click)="onImageClick(image)">
                 <img [src]="getImageSrc(image)" [alt]="image.imgNo" class="image" />
                 <div class="image-info">
                     <p class="image-id">{{ image.id }}</p>
@@ -83,6 +83,12 @@
 
             <span class="page-info">Page {{ currentPage() }} of {{ totalPages }}</span>
         </div>
-
+        <app-sync-image-modal *ngIf="imageModalVisible" 
+            [visible]="imageModalVisible"
+            [image]="selectedImage"
+            (closed)="closeImageModal()"
+            (languageChange)="onLanguageChanged($event)"
+            (sync)="onSyncRequested($event)">
+        </app-sync-image-modal>
     </div>
 </div>
