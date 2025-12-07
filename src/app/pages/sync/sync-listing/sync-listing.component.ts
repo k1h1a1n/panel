@@ -327,11 +327,14 @@ export class SyncListing implements OnInit {
             language: image?.lang || 'EN',
         };
         console.log('Inserting record via API', payload);
-        // await firstValueFrom(this.crudService.create(payload, 'greetings'));
+        await firstValueFrom(this.crudService.create(payload, 'greetings'));
     }
 
     private formatSegment(name: string): string {
-        return (name || '')
+        const raw = (name || '').toString();
+        const normalized = raw.trim().toLowerCase();
+        const mapped = normalized === 'festivals' ? 'Festival' : raw;
+        return mapped
             .toString()
             .replace(/([a-z])([A-Z])/g, '$1 $2')
             .replace(/([A-Za-z])([0-9])/g, '$1 $2')
