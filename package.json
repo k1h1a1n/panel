@@ -6,7 +6,8 @@
     "start": "ng serve --port 8000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "sync-server": "node scripts/sync-download-server.js"
   },
   "prettier": {
     "overrides": [
@@ -27,8 +28,16 @@
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@tailwindcss/postcss": "^4.1.16",
+    "adm-zip": "^0.5.16",
+    "archiver": "^6.0.2",
+    "axios": "^1.7.7",
+    "fs-extra": "^11.2.0",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@angular/build": "^20.1.3",

@@ -1,7 +1,7 @@
 import { CommonModule, Location } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { SharedApiService } from '../../../shared';
+import { SharedApiService, LoaderService } from '../../../shared';
 import { map } from 'rxjs';
 import { SyncImageModalComponent } from './sync-image-modal.component';
 
@@ -28,6 +28,7 @@ export class SyncListing implements OnInit {
     private route = inject(ActivatedRoute);
     private location = inject(Location);
     private sharedService = inject(SharedApiService);
+    private loaderService = inject(LoaderService);
 
     protected title = signal('Folders');
     protected currentFolders: FolderItem[] = [];
@@ -251,9 +252,48 @@ export class SyncListing implements OnInit {
         }
     }
 
-    protected onSyncRequested(image: any): void {
-        console.log('Sync requested for image', image);
+    protected async onSyncRequested(image: any): Promise<void> {
         this.closeImageModal();
+        if (!image?.link) return;
+
+        this.loaderService.show();
+
+        try {
+            // delegate download + save to local backend service
+            await this.sendToBackend(image);
+        } catch (error) {
+            console.error('Sync download failed', error);
+            this.loaderService.setError('Failed to download design.');
+        } finally {
+            this.loaderService.hide();
+        }
+    }
+
+    private async sendToBackend(image: any): Promise<void> {
+        const payload = {
+            link: image.link,
+            id: image.id,
+            imgNo: image.imgNo,
+            lang: image.lang || 'EN',
+        };
+
+        const response = await fetch('http://localhost:4300/download-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`Server error: ${response.status} ${text}`);
+        }
+
+        const json = await response.json();
+        if (!json.success) {
+            throw new Error(json.message || 'Download failed');
+        }
+
+        console.log('Sync completed. Assets saved at:', json.assetPath);
     }
 
     protected goToPage(page: number): void {
