@@ -6,10 +6,11 @@ import { Header } from './layout/header/header';
 import { CommonModule } from '@angular/common';
 import { PulseLoaderComponent } from './shared/components/pulse-loader/pulse-loader.component';
 import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
+import { SuccessToastComponent } from './shared/components/success-toast/success-toast.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Sidebar, Header, CommonModule, PulseLoaderComponent, ErrorToastComponent],
+  imports: [RouterOutlet, Sidebar, Header, CommonModule, PulseLoaderComponent, ErrorToastComponent, SuccessToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

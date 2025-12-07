@@ -44,6 +44,7 @@ export class SyncListing implements OnInit {
     protected pageSize = 5;
     protected selectedImage: any = null;
     protected imageModalVisible = false;
+    private downloadPathInfo: { root?: string; second?: string; third?: string } = {};
 
     get paginatedImages(): any[] {
         const start = (this.currentPage() - 1) * this.pageSize;
@@ -125,8 +126,12 @@ export class SyncListing implements OnInit {
             // extract path parts
             const pathParts = lookinFolder.split('/').filter((p: string) => p.length > 0);
             const firstPart = pathParts[0] || ''; // e.g., 'Greetings'
-            const secondPart = pathParts[1].split('_')[1] || ''; // e.g., 'GCat01_Personal'
-            const thirdPart = pathParts[2].split('_')[1] || ''; // e.g., 'GP001_Anniversary' //GP001_Anniversary further split based on _
+            const rawSecond = pathParts[1] || '';
+            const rawThird = pathParts[2] || '';
+            const secondPart = rawSecond.includes('_') ? (rawSecond.split('_')[1] || rawSecond) : rawSecond; // e.g., 'Personal'
+            const thirdPart = rawThird.includes('_') ? (rawThird.split('_')[1] || rawThird) : rawThird; // e.g., 'Anniversary'
+
+            this.downloadPathInfo = { root: firstPart, second: secondPart, third: thirdPart };
 
 
             // map category to API endpoint
@@ -263,7 +268,8 @@ export class SyncListing implements OnInit {
             await this.sendToBackend(image);
         } catch (error) {
             console.error('Sync download failed', error);
-            this.loaderService.setError('Failed to download design.');
+            const message = error instanceof Error ? error.message : 'Failed to download design.';
+            this.loaderService.setError(message || 'Failed to download design.');
         } finally {
             this.loaderService.hide();
         }
@@ -275,6 +281,7 @@ export class SyncListing implements OnInit {
             id: image.id,
             imgNo: image.imgNo,
             lang: image.lang || 'EN',
+            pathInfo: image.pathInfo || this.downloadPathInfo,
         };
 
         const response = await fetch('http://localhost:4300/download-image', {
@@ -293,6 +300,8 @@ export class SyncListing implements OnInit {
             throw new Error(json.message || 'Download failed');
         }
 
+        const successMsg = `Sync completed. Saved to ${json.zipPath || 'target folder'}`;
+        this.loaderService.setSuccess(successMsg);
         console.log('Sync completed. Zip stored at:', json.zipPath, 'Preview at:', json.previewPath);
     }
 
@@ -333,7 +342,8 @@ export class SyncListing implements OnInit {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const thumbDivs = doc.querySelectorAll('.thumbdesign');
-        const imageDetails: { link: string, id: string, imgNo: string }[] = [];
+        const imageDetails: { link: string, id: string, imgNo: string, pathInfo?: { root?: string; second?: string; third?: string } }[] = [];
+        const pathInfo = this.downloadPathInfo;
 
         thumbDivs.forEach(thumb => {
             const img = thumb.querySelector('img');
@@ -342,7 +352,7 @@ export class SyncListing implements OnInit {
                 const link = img.src;
                 const id = p.getAttribute('data-id') || '';
                 const imgNo = p.textContent?.trim() || '';
-                imageDetails.push({ link, id, imgNo });
+                imageDetails.push({ link, id, imgNo, pathInfo });
             }
         });
 

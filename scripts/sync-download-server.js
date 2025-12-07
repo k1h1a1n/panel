@@ -16,11 +16,12 @@ const imageminMozjpeg = imageminMozjpegModule?.default || imageminMozjpegModule;
 
 const PORT = process.env.PORT || 4300;
 const PROJECT_ROOT = path.join(__dirname, '..');
-const DOWNLOAD_DIR = path.join(PROJECT_ROOT, 'downloads');
-const PROCESSED_DIR = path.join(DOWNLOAD_DIR, 'processed_files');
-const OUTPUT_DIR = path.join(PROCESSED_DIR, 'output');
+const TEMP_DIR = path.join(PROJECT_ROOT, 'temp_processing');
+const PROCESSED_DIR = path.join(TEMP_DIR, 'processed_files');
+const DELIVERY_BASE_PATH = process.env.BRANDXPRESS_BASE_PATH || 'C:/inetpub/wwwroot/BrandXpressData';
+const OUTPUT_DIR = DELIVERY_BASE_PATH;
 
-fs.ensureDirSync(DOWNLOAD_DIR);
+fs.ensureDirSync(TEMP_DIR);
 fs.ensureDirSync(PROCESSED_DIR);
 fs.ensureDirSync(OUTPUT_DIR);
 
@@ -80,14 +81,16 @@ server.listen(PORT, () => {
 async function processPayload(payload) {
   const convertedUrl = convertUrl(payload.link);
   const fileName = path.basename(new URL(convertedUrl).pathname);
-  const downloadPath = path.join(DOWNLOAD_DIR, fileName);
+  const downloadPath = path.join(TEMP_DIR, fileName);
 
   await downloadFile(convertedUrl, downloadPath);
 
   const { folderName, processedFolder } = await extractAndProcess(downloadPath, payload);
-  const { zipPath, previewPath } = await zipFolder(folderName, processedFolder);
 
-  return { folderName, zipPath, previewPath };
+  const targetDir = buildTargetDirectory(payload.pathInfo || {}, folderName);
+  const { zipPath, previewPath } = await zipFolder(folderName, processedFolder, targetDir);
+
+  return { folderName, zipPath, previewPath, targetDir };
 }
 
 async function downloadFile(url, outputPath) {
@@ -212,7 +215,7 @@ function respondJson(res, status, payload) {
 async function convertSvgToPng(svgString, width, height, outputPath) {
   if (!svgString) return;
   await fs.ensureDir(path.dirname(outputPath));
-  const tempFile = path.join(DOWNLOAD_DIR, `temp-${Date.now()}-${Math.random().toString(36).slice(2)}.svg`);
+  const tempFile = path.join(TEMP_DIR, `temp-${Date.now()}-${Math.random().toString(36).slice(2)}.svg`);
   await fs.writeFile(tempFile, svgString, 'utf8');
 
   const command = `svgexport "${tempFile}" "${outputPath}" ${width}:${height}`;
@@ -497,15 +500,15 @@ async function createFinalSvg(svgString) {
   </svg>`;
 }
 
-async function zipFolder(folderName, processedFolderPath) {
+async function zipFolder(folderName, processedFolderPath, targetDir) {
   const folderPath = processedFolderPath || path.join(PROCESSED_DIR, folderName);
-  const zipFolderPath = path.join(OUTPUT_DIR, folderName);
-  const zipFilePath = path.join(zipFolderPath, `${folderName}.zip`);
+  const destinationDir = targetDir || path.join(OUTPUT_DIR, folderName);
+  const zipFilePath = path.join(destinationDir, `${folderName}.zip`);
 
-  await fs.ensureDir(zipFolderPath);
+  await fs.ensureDir(destinationDir);
 
   const previewSource = path.join(folderPath, 'preview.png');
-  const previewDestination = path.join(zipFolderPath, 'preview.png');
+  const previewDestination = path.join(destinationDir, 'preview.png');
 
   await new Promise((resolve, reject) => {
     const output = fs.createWriteStream(zipFilePath);
@@ -632,4 +635,61 @@ function getContentType(filePath) {
   if (ext === '.png') return 'image/png';
   if (ext === '.jpg' || ext === '.jpeg') return 'image/jpeg';
   return 'application/zip';
+}
+
+function buildTargetDirectory(pathInfo = {}, folderName = 'design') {
+  const segments = [];
+  const root = mapRootCategory(pathInfo.root || pathInfo.category || '');
+  if (root) segments.push(root);
+
+  const second = formatCategorySegment(pathInfo.second);
+  const third = formatCategorySegment(pathInfo.third);
+
+  if (second) segments.push(second);
+  if (third) segments.push(third);
+
+  const safeFolder = sanitizeSegment(folderName) || 'design';
+  segments.push(safeFolder);
+
+  return path.join(DELIVERY_BASE_PATH, ...segments.filter(Boolean));
+}
+
+function mapRootCategory(raw = '') {
+  const key = raw.toString().trim().toLowerCase();
+  const map = {
+    greetings: 'Greetings',
+    greeting: 'Greetings',
+    brochures: 'Brochures',
+    brochure: 'Brochures',
+    'social post': 'Social Post',
+    'social posts': 'Social Post',
+    socialpost: 'Social Post',
+    'socail post': 'Social Post',
+    'socail posts': 'Social Post',
+    coupons: 'Social Post',
+  };
+  return map[key] || sanitizeSegment(raw) || 'Misc';
+}
+
+function sanitizeSegment(name) {
+  return (name || '')
+    .toString()
+    .replace(/[^a-zA-Z0-9-_\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function formatCategorySegment(name) {
+  return sanitizeSegment(addCamelSpacing(name));
+}
+
+function addCamelSpacing(name) {
+  return (name || '')
+    .toString()
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Za-z])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([A-Za-z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }

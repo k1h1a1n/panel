@@ -5,6 +5,7 @@ export class LoaderService {
   private requestCount = 0;
   public isLoading = signal(false);
   public errorMessage = signal<string | null>(null);
+  public successMessage = signal<string | null>(null);
 
   show(): void {
     this.requestCount++;
@@ -24,7 +25,16 @@ export class LoaderService {
     setTimeout(() => this.errorMessage.set(null), 5000); // Clear after 5s
   }
 
+  setSuccess(message: string): void {
+    this.successMessage.set(message);
+    setTimeout(() => this.successMessage.set(null), 4000); // Clear after 4s
+  }
+
   clearError(): void {
     this.errorMessage.set(null);
+  }
+
+  clearSuccess(): void {
+    this.successMessage.set(null);
   }
 }
